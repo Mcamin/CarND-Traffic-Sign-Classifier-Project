@@ -1,27 +1,10 @@
 ## Project: Build a Traffic Sign Recognition Program
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-Overview
----
-In this project, you will use what you've learned about deep neural networks and convolutional neural networks to classify traffic signs. You will train and validate a model so it can classify traffic sign images using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). After the model is trained, you will then try out your model on images of German traffic signs that you find on the web.
+[//]: # (Image References)
 
-We have included an Ipython notebook that contains further instructions 
-and starter code. Be sure to download the [Ipython notebook](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb). 
-
-We also want you to create a detailed writeup of the project. Check out the [writeup template](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup. The writeup can be either a markdown file or a pdf document.
-
-To meet specifications, the project will require submitting three files: 
-* the Ipython notebook with the code
-* the code exported as an html file
-* a writeup report either as a markdown or pdf file 
-
-Creating a Great Writeup
----
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/481/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
-
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
+[im01]: ./imgs/Training.png "Distribution of training data"
+[im02]: ./imgs/Traffic_sign_examples.png "Traffic signs contrast and brightness"
 
 The Project
 ---
@@ -33,26 +16,55 @@ The goals / steps of this project are the following:
 * Analyze the softmax probabilities of the new images
 * Summarize the results with a written report
 
-### Dependencies
-This lab requires:
 
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+Overview
+---
+In this project, i will apply what you've learned about deep neural networks and convolutional neural networks to 
+classify traffic signs using TensorFlow (reaching 96.68% accuracy). The highlights of this solution would be data 
+exploration, data preprocessing, training, testing and analyzing the performance of 2 models, testing the best model 
+on some images from the web.
 
-The lab environment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
+Dataset exploration
+---
+The [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset) consists of 34,799 
+32×32 px color images that we are supposed to use for training, and 12,630 images that we will use for testing. 
+Each image is a photo of a traffic sign belonging to one of 43 classes, e.g. traffic sign types.
 
-### Dataset and Repository
+Each image is a 32×32×3 array of pixel intensities, represented as [0, 255] integer values in RGB color space. 
+Class of each image is encoded as an integer in a 0 to 42 range. Dataset is very unbalanced, and some classes are 
+represented way better than the others. 
 
-1. Download the data set. The classroom has a link to the data set in the "Project Instructions" content. This is a pickled dataset in which we've already resized the images to 32x32. It contains a training, validation and test set.
-2. Clone the project, which contains the Ipython notebook and the writeup template.
-```sh
-git clone https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project
-cd CarND-Traffic-Sign-Classifier-Project
-jupyter notebook Traffic_Sign_Classifier.ipynb
-```
+![alt text][im01]
 
-### Requirements for Submission
-Follow the instructions in the `Traffic_Sign_Classifier.ipynb` notebook and write the project report using the writeup template as a guide, `writeup_template.md`. Submit the project code and writeup document.
+The images also differ significantly in terms of contrast and brightness, so we will need to apply some kind of 
+histogram equalization, this should noticeably improve feature extraction.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+![alt text][im02]
+
+Dataset preprocessing
+---
+The usual preprocessing in this case would include normalizing the images ( changing pixels values to [0, 1] as 
+currently they are in [0, 255] range). Looking at the images, histogram equalization 
+may be helpful as well. I will apply adaptive histogram equalization (CLAHE), as it seems to improve feature extraction 
+even further in our case.
+
+I will only use a single channel in my model, e.g. grayscale images instead of color ones. As Pierre Sermanet and Yann 
+LeCun mentioned in their paper, using color channels didn't seem to improve things a lot.
+
+
+Architecture 
+---
+I first tried with a standard LeNet architecture which when trained for 50 epochs, learning rate of 1e-3 and a batch size
+of 128, the model achieved almost 96% accuracy. The only change that was made in the preprocessing phase, the use of 
+Xavier initialization and the use of dropout. 
+I then trained a VGG16 model which for the same parameters gave a better results with 96.6% accuracy. 
+
+Results 
+---
+After a couple of fine-tuning training iterations this model scored 96.6% accuracy on the test set, which is fair 
+enough. As there was a total of 12,630 images that we used for testing, apparently there are some examples that the 
+model could not classify correctly like the Children crossing Sign download from the web which can be due to the fact 
+that no augmentation was applied to the images, as the images used for the training were well cropped and centered 
+whereas the last image used for testing had a background, and was inclined towards the right edge.
+random crops, rotating images might be helpful in that case to enable the model to better identify the traffic signs. 
 
